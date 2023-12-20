@@ -1,0 +1,86 @@
+body {
+    font-family: Arial, sans-serif;
+}
+#navbar-container {
+    overflow: hidden;
+    background-color: #333;
+}
+
+#content-box {
+    background-color: #f2f2f2; /* Light grey background */
+    color: #333333; /* Dark text for readability */
+    padding: 20px; /* Adds space inside the div */
+    margin: 20px 0; /* Adds space outside the div */
+    border-radius: 8px; /* Rounded corners */
+    border: 1px solid #cccccc; /* Light grey border */
+    text-align: center; /* Centers the text inside the div */
+    font-size: 1.2em; /* Slightly larger text */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
+    max-width: 600px; /* Maximum width of the div */
+    margin-left: auto; /* These two margins center the div */
+    margin-right: auto;
+    font-family: Arial, sans-serif; /* Change as per your preference */
+}
+
+    
+.navbar a {
+    float: left;
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+}
+.navbar a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.title {
+
+    color: white;
+    padding: 14px 20px;
+    text-decoration: none;
+
+}
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0;
+    box-sizing: border-box;
+}
+.form-group button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+}
+.form-group button:hover {
+    background-color: #45a049;
+}
+
+.left-link {
+    
+    justify-content: flex-start;
+}
+
+.right-link {
+    display: flex;
+    justify-content: flex-end;
+}
