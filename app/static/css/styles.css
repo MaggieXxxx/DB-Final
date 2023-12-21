@@ -6,20 +6,41 @@ body {
     background-color: #333;
 }
 
-#content-box {
-    background-color: #f2f2f2; /* Light grey background */
-    color: #333333; /* Dark text for readability */
-    padding: 20px; /* Adds space inside the div */
-    margin: 20px 0; /* Adds space outside the div */
-    border-radius: 8px; /* Rounded corners */
-    border: 1px solid #cccccc; /* Light grey border */
-    text-align: center; /* Centers the text inside the div */
-    font-size: 1.2em; /* Slightly larger text */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
-    max-width: 600px; /* Maximum width of the div */
-    margin-left: auto; /* These two margins center the div */
+.content-box {
+    background-color: #f2f2f2;
+    color: #333333;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    border: 1px solid #cccccc;
+    text-align: left;
+    font-size: 1.2em;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin-left: auto;
     margin-right: auto;
-    font-family: Arial, sans-serif; /* Change as per your preference */
+    font-family: Arial, sans-serif;
+}
+
+#submit-button {
+    background-color: red;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: black;
+    cursor: pointer;
+    width: 30%;
+}
+
+#info-content {
+    max-width: 100%;
+}
+
+#welcome {
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 20px;
 }
 
     
@@ -45,9 +66,22 @@ body {
 }
 .container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* Change flex-direction to row */
     align-items: center;
     justify-content: center;
+}
+
+.profile-container{
+    display: inline;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+}
+
+.page-header {
+    font-size: 20px;
+    text-align: left;
+    padding-left: 18px;
 }
 .form-group {
     margin-bottom: 15px;
@@ -71,6 +105,7 @@ body {
     cursor: pointer;
     width: 100%;
 }
+
 .form-group button:hover {
     background-color: #45a049;
 }

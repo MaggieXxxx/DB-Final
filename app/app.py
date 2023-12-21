@@ -1,3 +1,4 @@
+import random
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 import pypyodbc as odbc
 from flask import request
@@ -10,7 +11,6 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 import matplotlib.pyplot as plt
-from datetime import datetime
 from datetime import datetime
 
 connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:echang.database.windows.net,1433;Database=car_insurance_db;Uid=SANHO_LEE;Pwd=DMSFALL2023%-;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
@@ -33,9 +33,10 @@ def validate():
     if not customer:
         flash('Invalid SSN.', 'error')
         return redirect(url_for('login'))
-    
+
 
     # customer basic info
+    # SSN, lastname, firstname, dob, gender, email, phone, lisc#
     customer_info = {
         'SSN': customer[0],
         'FirstName': customer[1],
@@ -44,7 +45,7 @@ def validate():
         'Gender': customer[4],
         'Email': customer[5],
         'Phone': customer[6],
-        'LiscenseNumber': customer[7],
+        'LicenseNumber': customer[7],
     }
     print('customer info:', customer_info)
     session['customer_info'] = customer_info
@@ -52,14 +53,18 @@ def validate():
     # customer driving profile, used in learning algorithm to predict premium
     cursor.execute('SELECT * FROM Driving_History WHERE CustomerSSN = ?', [ssn])
     driving_history = cursor.fetchone()
+
     cursor.execute('SELECT * FROM Vehicle WHERE CustomerSSN = ?', [ssn])
     vehicle = cursor.fetchone()
+
+    cursor.execute('SELECT * FROM Address WHERE CustomerSSN = ?', [ssn])
+    address = cursor.fetchone()
 
     print("driving history: ", driving_history)
     print("vehicle info: ", vehicle)
 
 
-    # Calculate age based on Date of Birth
+    # Calculate age based on Date of B  irth
     dob = customer[3]
     current_date = datetime.now()
     driver_age = current_date.year - dob.year - ((current_date.month, current_date.day) < (dob.month, dob.day))
@@ -71,7 +76,51 @@ def validate():
         'accidents': driving_history[2],
         'drivingexperience': driving_history[3]
     }
+
+     # get address from ADDRESS table, addressline1, zip, custssn, agentssn, addressline2, state, city
+    address_info = {
+        'AddressLine1': address[0],
+        'Zip': address[1],
+        'AddressLine2': address[4],
+        'State': address[5],
+        'City': address[6]
+    }
+
+    vehicle_info = {
+        'VIN': vehicle[0],
+        'Brand': vehicle[1],
+        'Model': vehicle[2],
+        'Year': vehicle[3],
+        'LicensePlate': vehicle[4],
+        'Mileage': vehicle[5],
+        'VehicleType': vehicle[6],
+    }
+    # select largest policy in database
+    cursor.execute('SELECT * FROM Contract WHERE CustomerSSN = ? ORDER BY MonthlyPrice DESC', [ssn])
+    policy = cursor.fetchone()
+
+    # contractId, coverageType, maxCoverage, startDate, endDate, monthlyPremium
+    policy_info = {
+        'ContractID': policy[0],
+        'CoverageType': policy[1],
+        'MaxCoverage': policy[2],
+        'MonthlyPremium': policy[5]
+    }
+    
+    cursor.execute('SELECT * FROM Company WHERE CompanyCode = ?', [policy[6]])
+    company = cursor.fetchone() 
+    company_info = {
+        'CompanyCode': company[0],
+        'CompanyName': company[1],
+    }
+
+    session['company_info'] = company_info
+
+    session['policy_info'] = policy_info
+    session['vehicle_info'] = vehicle_info
     session['driving_profile'] = driving_profile
+    session['address_info'] = address_info
+    session['policy_info'] = policy_info
     print("driving profile:" , driving_profile)
     return redirect(url_for('home'))
 
@@ -84,51 +133,50 @@ def home():
 @app.route('/profile')
 def profile():
     customer_info = session.get('customer_info', None)
-    return render_template('profile.html', user=customer_info)
-
-@app.route('/view-policy')
-def view_policy():
-    return render_template('view_policy.html')
+    vehicle_info = session.get('vehicle_info', None)
+    driver_profile = session.get('driving_profile', None)
+    address_info = session.get('address_info', None)
+    policy_info = session.get('policy_info', None)
+    return render_template('profile.html', policy=policy_info, user=customer_info, vehicle=vehicle_info, profile=driver_profile, address=address_info)
 
 @app.route('/file-claim')
 def file_claim():
+
     return render_template('file_claim.html')
+
+@app.post('/file-claim')
+def file_claim_post():
+    # get data from post request in json form
+    data = request.get_json()
+    print(data)
+    accident_date = data.get('accidentDate')
+    accident_desc = data.get('accidentDesc')
+    claim_amount = data.get('claimAmount')
+
+    # convert accident_date_str to datetime object
+    #accident_date = datetime.strptime(accident_date_str, '%Y-%m-%d').date()
+
+    # generate random int for claim_id
+    claim_id = random.randint(300, 10000)
+    status = 'Pending'
+    ssn = session.get('customer_info', None)['SSN']
+    contract_id = session.get('policy_info', None)['ContractID']
+
+    new_claim = [claim_id, accident_date, accident_desc, claim_amount, status, ssn, contract_id]
+    print("Claim Info: ", new_claim)
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO Claim (ClaimID, AccidentDate, AccidentDesc, ClaimAmount, Status, CustomerSSN, ContractID) VALUES (?, ?, ?, ?, ?, ?, ?)', new_claim)
+    conn.commit()
+    
+    return jsonify({'message': 'Claim filed successfully!'})
 
 @app.route('/generate-quote')
 def generate_quote():
     driving_profile = session.get('driving_profile', None)
-    premium_pred = predict_premium(quote_calculation_model, driving_profile)
+    premium_pred = round(predict_premium(quote_calculation_model, driving_profile)[0], 2)
+    company_info = session.get('company_info', None)
+    return render_template('generate_quote.html', quote=premium_pred, company=company_info)
 
-    return render_template('generate_quote.html', quote=premium_pred)
-
-'''
-@app.post('/')
-def get_customer_info():
-    ssn = request.json.get('ssn')  # Get SSN from the JSON body of the request
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM Customer WHERE CustomerSSN = ?', [ssn])  # Use parameterized query to prevent SQL injection
-    
-    customer = cursor.fetchone()
-    print(customer)
-
-    # SSN, lastname, firstname, dob, gender, email, phone, lisc#
-    # get address from ADDRESS table, addressline1, zip, custssn, agentssn, addressline2, state, city
-    if customer:
-        customer_info = {
-            'SSN': customer[0],
-            'FirstName': customer[1],
-            'LastName': customer[2], 
-            'DOB': customer[3],
-            'Gender': customer[4],
-            'Email': customer[5],
-            'Phone': customer[6],
-            'LiscenseNumber': customer[7],
-        }
-        redirect('/home')
-        return jsonify(customer_info)
-    else:
-        return jsonify({'error': 'Customer not found'}), 404  # Return error message with HTTP status code 404
-'''  
 # machine learning algorithm to predict premium
 def learning_model():
     sql_query = "SELECT * FROM Profile"
@@ -206,9 +254,8 @@ def predict_premium(model, driving_profile):
 
     # Make a prediction using the best model
     premium_pred = model.predict(data)
+    print(f"Predicted Monthly Premium for age {driving_profile['age']}: ${premium_pred[0]:.2f}")
     return premium_pred
-    # print(f"Predicted Monthly Premium for age {driving_profile['age']}: ${premium_pred[0]:.2f}")
-
 
 if __name__ == '__main__':
     quote_calculation_model = learning_model()
