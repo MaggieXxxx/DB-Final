@@ -10,7 +10,6 @@ from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-import matplotlib.pyplot as plt
 from datetime import datetime
 
 connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:echang.database.windows.net,1433;Database=car_insurance_db;Uid=SANHO_LEE;Pwd=DMSFALL2023%-;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
