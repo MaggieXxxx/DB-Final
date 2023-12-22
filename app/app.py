@@ -12,7 +12,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from datetime import datetime
 
-connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:echang.database.windows.net,1433;Database=car_insurance_db;Uid=SANHO_LEE;Pwd=DMSFALL2023%-;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+# Dear Grader, we have provided the connection string separately as to not expose it publicly.
+connection_string = '<insert connection string here>'
 conn = odbc.connect(connection_string)
 
 app = Flask(__name__)
